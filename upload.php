@@ -1,44 +1,52 @@
 <?php
-$allowed_filetypes = array('.jpg', '.gif', '.png');
-$max_file_size = 5242880;
-$upload_path = 'upload/';
-$max_file_uploads = 5;
-$files = $_FILES['userfile'];
+require 'config.php';
 
 $err = '';
 
-if (count($files['name']) > $max_file_uploads) {
-    $err = 'Превышенно максимально допустимое количество файлов!';
-} else {
-    for ($i = 0; $i < count($files['name']); $i++) {
-        $type = $files['type'][$i];
-        $size = $files['size'][$i];
+function validType($file)
+{
+    $validImageMimeTypes = ["image/jpeg", "image/png"];
 
-        if (!($type === 'image/jpeg' or $type === 'image/png')) {
-            $err = 'Error - files wrong format';
-            break;
-        }
-        if (!($size <= $max_file_size)) {
-            $err = 'Error - files wrong size';
-            break;
-        }
-    }
+    $finfo = finfo_open(FILEINFO_MIME_TYPE, null);
+    $ext = finfo_file($finfo, $file);
+    finfo_close($finfo);
+
+    return in_array($ext, $validImageMimeTypes);
 }
 
-if ($err) {
-    echo "<script>alert('$err')</script>";
-} else {
-    for ($i = 0; $i < count($files['tmp_name']); $i++) {
-        $name = $files['name'][$i];
-        $tmp_name = $files['tmp_name'][$i];
+if (isset($_FILES['files'])) {
+    $files = $_FILES['files'];
 
-        move_uploaded_file($tmp_name, $upload_path . str_replace([' ', '_'], '-', $name));
+    if (count($files['name']) > $MAX_FILE_UPLOADS) {
+        $err = 'Превышенно максимально допустимое количество файлов!';
+    } else {
+        for ($i = 0; $i < count($files['name']); $i++) {
+            $size = $files['size'][$i];
+
+            if (!(validType($files['tmp_name'][$i]))) {
+                $err = 'Неверный формат файла';
+            }
+
+            if (!($size <= $MAX_FILE_SIZE)) {
+                $err = 'Превышен максимально допустимый размер файла';
+            }
+        }
     }
 
-    header('Location: ' . '/');
-}
-?>
+    if ($err) {
+        echo $err;
+    } else {
+        for ($i = 0; $i < count($files['tmp_name']); $i++) {
+            $name = $files['name'][$i];
+            $tmp_name = $files['tmp_name'][$i];
 
-<body style="background: white">
-<a href="/">Вернуться</a>
-</body>
+            if (!move_uploaded_file($tmp_name, $UPLOAD_PATH . str_replace([' ', '_'], '-', $name))) {
+                echo 'Произошла непредвиденная ошибка';
+                break;
+            }
+        }
+        echo 'Загрузка прошла успешна.';
+    }
+} else {
+    echo 'Необходимо выбрать файл.';
+}

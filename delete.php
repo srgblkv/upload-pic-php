@@ -1,9 +1,17 @@
 <?php
-$dir = 'upload/';
-foreach (array_keys($_POST) as $array_key) {
-    $filename = str_replace('_', '.', $dir . $array_key);
-    var_dump(unlink($filename));
+require 'config.php';
+
+foreach ($_POST['files'] as $file_name) {
+    $filename = $UPLOAD_PATH . $file_name;
+
+    if (unlink($filename)) {
+        echo 'Выбранные файлы успешно удалены.';
+    } else {
+        echo 'Произошла непредвиденная ошибка!';
+    }
 }
 
-header('Location: ' . '/');
-?>
+
+
+
+
