@@ -4,49 +4,10 @@ const btnModalSubmit = document.querySelector('.uploader-modal button');
 const uploadModalWrapper = document.querySelector('.uploader-modal-wrapper');
 const fileInput = document.querySelector('#file-field')
 const progressBar = document.querySelector('#progress-bar');
-
 const statusMessage = document.querySelector('#status-message');
-
 const body = document.querySelector('body');
-const picCheckers = document.querySelectorAll('.picture-checker');
 const btnRemove = document.querySelector('.btn-remove');
-
-let checkedArray = [];
-
-for (const check of picCheckers) {
-    addEventListener('change', () => {
-        if (check.checked) {
-            if (!checkedArray.includes(check.name)) {
-                checkedArray.push(check.name);
-            }
-        } else {
-            if (checkedArray.includes(check.name)) {
-                const index = checkedArray.indexOf(check.name);
-                checkedArray = checkedArray.slice(0, index)
-                    .concat(checkedArray.slice(index + 1, checkedArray.length));
-            }
-        }
-
-        btnRemove.disabled = !checkedArray.length;
-    })
-}
-
-btnRemove.addEventListener('click', (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    const xhr = new XMLHttpRequest();
-
-    for (const checkedFile of checkedArray) {
-        formData.append('files[]', checkedFile);
-    }
-
-    xhr.open('post', 'delete.php');
-    xhr.send(formData);
-    xhr.onload = () => {
-        viewStatus(xhr.responseText);
-    };
-});
-
+const imgViewContainer = document.querySelector('.pictures-view-items');
 
 fileInput.addEventListener('change', () => {
     btnModalSubmit.disabled = !fileInput.files;
@@ -92,6 +53,7 @@ function progressHandler(e) {
 function completeHandler(e) {
     viewStatus(e.target.responseText);
     defaultValues();
+    renderImgList();
 }
 
 function viewStatus(resMsg) {
@@ -108,3 +70,80 @@ function defaultValues() {
     fileInput.style.display = 'block';
     progressBar.style.display = 'none';
 }
+
+function renderImgList() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('get', 'load.php')
+    xhr.send()
+
+    xhr.onloadend = () => {
+        imgViewContainer.innerHTML = '';
+
+        for (const file of JSON.parse(xhr.response).sort((a, b) => a.name > b.name ? -1 : 1)) {
+            const picItem = `
+                    <div class="picture-item">
+                        <div class="picture-img">
+                            <a href="${file.src}"><img src="${file.src}" alt="${file.name}"/></a>
+                        </div>
+                        <div class="picture-info">
+                            <ul>
+                                <li>Название: <b>${file.name}</b></li>
+                                <li>Размер файла: <b>${file.size}</b></li>
+                                <li>Дата загрузки: <b>${file.uploadDate}</b></li>
+                                <li>
+                                    <label>
+                                        Выбрать:
+                                        <input
+                                            class="picture-checker"
+                                            name="${file.name}"
+                                            type="checkbox"
+                                        />
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            imgViewContainer.insertAdjacentHTML('afterbegin', picItem);
+        }
+
+        const picCheckers = document.querySelectorAll('.picture-checker');
+
+        let checkedArray = [];
+        for (const check of picCheckers) {
+            addEventListener('change', () => {
+                if (check.checked) {
+                    if (!checkedArray.includes(check.name)) {
+                        checkedArray.push(check.name);
+                    }
+                } else {
+                    if (checkedArray.includes(check.name)) {
+                        const index = checkedArray.indexOf(check.name);
+                        checkedArray = checkedArray.slice(0, index)
+                            .concat(checkedArray.slice(index + 1, checkedArray.length));
+                    }
+                }
+                btnRemove.disabled = !checkedArray.length;
+            })
+        }
+
+        btnRemove.addEventListener('click', (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const xhr = new XMLHttpRequest();
+
+            for (const checkedFile of checkedArray) {
+                formData.append('files[]', checkedFile);
+            }
+
+            xhr.open('post', 'delete.php');
+            xhr.send(formData);
+            xhr.onloadend = () => {
+                viewStatus(xhr.responseText);
+                renderImgList();
+            };
+        });
+    }
+}
+
+renderImgList()
