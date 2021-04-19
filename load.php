@@ -43,7 +43,3 @@ function loadFilesFromDir($dir): array
 if (isset($_GET)) {
     echo(json_encode(loadFilesFromDir($UPLOAD_PATH)));
 }
-
-
-
-

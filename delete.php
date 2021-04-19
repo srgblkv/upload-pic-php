@@ -11,8 +11,3 @@ foreach ($_POST['files'] as $file_name) {
 }
 
 echo 'Выбранные файлы успешно удалены.';
-
-
-
-
-
