@@ -42,7 +42,7 @@ function uploadFiles() {
 
     xhr.upload.addEventListener('progress', progressHandler, false);
     xhr.addEventListener('load', completeHandler, false);
-    xhr.open('post', 'upload.php');
+    xhr.open('post', 'include/upload.php');
     xhr.send(formData);
 }
 
@@ -73,13 +73,14 @@ function defaultValues() {
 
 function renderImgList() {
     const xhr = new XMLHttpRequest();
-    xhr.open('get', 'load.php')
+    xhr.open('get', 'include/load.php')
     xhr.send()
 
     xhr.onloadend = () => {
         imgViewContainer.innerHTML = '';
+        btnRemove.disabled = true;
 
-        for (const file of JSON.parse(xhr.response).sort((a, b) => a.name > b.name ? -1 : 1)) {
+        for (const file of JSON.parse(xhr.response).sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? -1 : 1)) {
             const picItem = `
                     <div class="picture-item">
                         <div class="picture-img">
@@ -136,7 +137,7 @@ function renderImgList() {
                 formData.append('files[]', checkedFile);
             }
 
-            xhr.open('post', 'delete.php');
+            xhr.open('post', 'include/delete.php');
             xhr.send(formData);
             xhr.onloadend = () => {
                 viewStatus(xhr.responseText);

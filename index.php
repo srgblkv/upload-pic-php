@@ -1,3 +1,4 @@
+<?php include $_SERVER['DOCUMENT_ROOT'] . '/include/config.php'; ?>
 <!doctype html>
 <html lang="ru">
 <head>
@@ -27,12 +28,13 @@
                 <span class="close-modal-btn">x</span>
                 <h3>Загрузка изображений</h3>
                 <div class="ps">
-                    <span>! допускается изображения форматов: jpeg, png, jpg</span>
+                    <span>! допускается изображения форматов: *.jpeg, *.png</span>
                     <span>! файл не должен превышать 5 Мб.</span>
                     <span>! максимальное количество файлов - 5</span>
                 </div>
                 <form id="upload-files" enctype="multipart/form-data" method="post">
-                    <input class="file-input" id="file-field" name="file" type="file" multiple>
+                    <input class="file-input" id="file-field" name="file" type="file" multiple
+                           accept="<?= implode(', ', $VALID_IMAGE_MIME_TYPES) ?>">
                     <progress id="progress-bar" value="0" max="100"></progress>
                     <button type="submit" disabled>Загрузить</button>
                 </form>
@@ -55,6 +57,6 @@
         <a target="_blank" href="https://github.com/srgblkv">@srgblkv</a> 2021
     </footer>
 </div>
-<script src="./js/main.js"></script>
+<script src="/js/main.js"></script>
 </body>
 </html>
