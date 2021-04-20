@@ -1,17 +1,15 @@
 <?php
-require 'config.php';
+include $_SERVER['DOCUMENT_ROOT'] . '/include/config.php';
 
 $err = '';
 
-function validType($file)
+function validType($file, $types)
 {
-    $validImageMimeTypes = ["image/jpeg", "image/png"];
-
     $finfo = finfo_open(FILEINFO_MIME_TYPE, null);
     $ext = finfo_file($finfo, $file);
     finfo_close($finfo);
 
-    return in_array($ext, $validImageMimeTypes);
+    return in_array($ext, $types);
 }
 
 if (isset($_FILES['files'])) {
@@ -23,7 +21,7 @@ if (isset($_FILES['files'])) {
         for ($i = 0; $i < count($files['name']); $i++) {
             $size = $files['size'][$i];
 
-            if (!(validType($files['tmp_name'][$i]))) {
+            if (!(validType($files['tmp_name'][$i], $VALID_IMAGE_MIME_TYPES))) {
                 $err = 'Неверный формат файла';
             }
 
